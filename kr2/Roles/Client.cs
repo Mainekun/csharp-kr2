@@ -19,7 +19,9 @@ namespace kr2.Roles
 
 		public String Whence { get { return _whence; } }
 		public int RoomNumber { get { return _number; } }
+		public int Place { get { return _place; } }
 		public String Name { get { return _fullName; } }
+		public int PaidDays {  get { return _paidDays; } }
 
 		public Client()
 		{
@@ -50,7 +52,7 @@ namespace kr2.Roles
 			return $"Client " +
 				$"{_fullName}\n" +
 				$"Personal ID: {_id}\n" +
-				$"Whemce: {_whence}\n" +
+				$"Whence: {_whence}\n" +
 				$"Paid number: {_number}\n" +
 				$"Place: {_place}\n" +
 				$"Arrivied in: {_arrivialDate.ToLongDateString()}\n" +

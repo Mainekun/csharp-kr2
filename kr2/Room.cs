@@ -17,6 +17,7 @@ namespace kr2
 		public int Number { get {  return _number; } }
 		public int Cost { get { return _cost; } }
 		public int Floor { get { return _floor; } }
+		public RoomType Type { get { return _type; } }
 
 		public Room()
 		{

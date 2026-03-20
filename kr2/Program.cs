@@ -99,90 +99,149 @@ namespace kr2
 
 				switch (pressedKey.Key)
 				{
-					case ConsoleKey.D1:
-						var room = InterfacePrinter.ReadRoomFromConsole();
-						var cost = rooms
-							.Where(r => r.Number == room.Key && r.Floor == room.Value)
-							.Select(r => r.Cost).First();
-						Console.WriteLine($"Cost of room {room.Key} on {room.Value} costs {cost}$");
+						case ConsoleKey.D1:
+						{
+							var room = InterfacePrinter.ReadRoomFromConsole();
+							var roomInfo = rooms
+								.Where(r => r.Number == room.Key && r.Floor == room.Value)
+								.Select(r => r.Cost);
+							if (roomInfo.ToList().Count == 0)
+							{
+								Console.WriteLine("There is no such room");
+								break;
+							}
+							var cost = roomInfo.First();
+								Console.WriteLine($"Cost of room {room.Key} on {room.Value} floor costs {cost}$");
+						}
 						break;
 					case ConsoleKey.D2:
-						string whence = Console.ReadLine();
-						List<Client> filteredClients = clients.Where(c => c.Whence == whence).ToList();
-						foreach (Client client in filteredClients)
 						{
-							Console.WriteLine(client.Name);
+							string whence = Console.ReadLine();
+							List<Client> filteredClients = clients.Where(c => c.Whence == whence).ToList();
+							foreach (Client client in filteredClients)
+							{
+								Console.WriteLine(client.Name);
+							}
 						}
 						break;
 					case ConsoleKey.D3:
-						string clientsName = Console.ReadLine();
-						string strWeekday = Console.ReadLine();
-						Weekday weekday;
-						if (int.TryParse(strWeekday, out int day))
 						{
-							if (day >= 0 && day <= 6)
+							string clientsName = Console.ReadLine();
+							string strWeekday = Console.ReadLine();
+							Weekday weekday;
+							if (int.TryParse(strWeekday, out int day))
 							{
-								weekday = (Weekday)day;
+								if (day >= 0 && day <= 6)
+								{
+									weekday = (Weekday)day;
+								}
+								else
+								{
+									Console.WriteLine("Weekday must be in range from 0 to 6, Monday to Sunday accordingly");
+									break;
+								}
 							}
 							else
 							{
-								Console.WriteLine("Weekday must be in range from 0 to 6, Monday to Sunday accordingly");
+								Console.WriteLine("Weekday must be integer");
 								break;
 							}
-						}
-						else
-						{
-                            Console.WriteLine("Weekday must be integer");
-                            break;
-                        }
-						var clientsRoom = clients
-							.Where(c => c.Name == clientsName)
-							.Select(c => c.RoomNumber)
-							.ToList();
-						if (clientsRoom.Count < 1)
-						{
-							Console.WriteLine("There is no such person in hotel");
-							break;
-						}	
-						var targetFloor = rooms
-							.Where(r => r.Number == clientsRoom.First())
-							.Select(r => r.Floor)
-							.ToList();
-						if (targetFloor.Count < 1)
-						{
-							Console.WriteLine("There is no such room");
-							break;
-						}
-						var staffOnFloor = assignedFloors
-							.Where(p => p.Value == targetFloor.First())
-							.ToList();
-						var staffOnDay = schedule
-							.Where(p => p.Value == weekday)
-							.ToList();
-						var staffOnDayAndFloor = staffOnDay
-							.Join(
-								staffOnFloor,
-								d => d.Key,
-								f => f.Key,
-								(d, f) => new { Key = d.Key })
-							.Select(s => s.Key)
-							.ToList();
-						var targetStaff = staffMembers
-							.Where(s => staffOnDayAndFloor.Contains(s.Key))
-							.ToList();
+							var clientsRoom = clients
+								.Where(c => c.Name == clientsName)
+								.Select(c => c.RoomNumber)
+								.ToList();
+							if (clientsRoom.Count < 1)
+							{
+								Console.WriteLine("There is no such person in hotel");
+								break;
+							}
+							var targetFloor = rooms
+								.Where(r => r.Number == clientsRoom.First())
+								.Select(r => r.Floor)
+								.ToList();
+							if (targetFloor.Count < 1)
+							{
+								Console.WriteLine("There is no such room");
+								break;
+							}
+							var staffOnFloor = assignedFloors
+								.Where(p => p.Value == targetFloor.First())
+								.ToList();
+							var staffOnDay = schedule
+								.Where(p => p.Value == weekday)
+								.ToList();
+							var staffOnDayAndFloor = staffOnDay
+								.Join(
+									staffOnFloor,
+									d => d.Key,
+									f => f.Key,
+									(d, f) => new { Key = d.Key })
+								.Select(s => s.Key)
+								.ToList();
+							var targetStaff = staffMembers
+								.Where(s => staffOnDayAndFloor.Contains(s.Key))
+								.ToList();
 
-						Console.WriteLine($"Found {targetStaff.Count} staffmembers");
-						foreach (StaffMember staff in targetStaff)
-						{
-							Console.WriteLine(staff.FullName);
+							Console.WriteLine($"Found {targetStaff.Count} staffmembers");
+							foreach (StaffMember staff in targetStaff)
+							{
+								Console.WriteLine(staff.FullName);
+							}
 						}
-
 						break;
 					case ConsoleKey.D4:
+						{
+							var availableRooms = rooms
+							.LeftJoin(
+								clients,
+								r => r.Number,
+								c => c.RoomNumber,
+								(r, c) => new {
+									P = c?.Place,
+									Number = r.Number,
+									RType = r.Type})
+							.GroupBy(s => s.Number)
+							.Select(g => new { Number = g.Key, Occupied = g.Count(p => p.P != null)});
+
+							foreach (var r in availableRooms)
+							{
+								Console.WriteLine($"in room {r.Number} available {r.Occupied} places");
+							}
+						}
+
 						break;
-					case ConsoleKey.D5: 
+					case ConsoleKey.D5:
+						{
+							var occupiedSingleRooms = rooms
+								.Where(r => r.Type == RoomType.SingleRoom)
+								.Join(
+									clients,
+									r => r.Number,
+									c => c.RoomNumber,
+									(r, c) => new { Number = r.Number });
+
+							Console.WriteLine($"occupied {occupiedSingleRooms.Count()} rooms");
+							foreach (var r in occupiedSingleRooms)
+							{
+								Console.WriteLine($"Room {r.Number} is occupied");
+							}
+						}
+
 						break;
 					case ConsoleKey.D6:
+						{
+							var profit = clients
+								.Join(
+									rooms,
+									c => c.RoomNumber,
+									r => r.Number,
+									(c, r) => new { Days = c.PaidDays, RType = r.Type, Cost = r.Cost })
+								.Select(c => c.Days * c.Cost / ((int)c.RType + 1))
+								.Sum();
+
+							Console.WriteLine($"Total paid: {profit}$");
+						}
+
 						break;
 					case ConsoleKey.D0:
 						exitFlag = true;
@@ -194,15 +253,50 @@ namespace kr2
 
 		static void EditStaffMenuLoop()
 		{
-			
+			InterfacePrinter.PrintStaffMenu();
+
 			bool exitFlag = false;
 			while (!exitFlag)
 			{
-				InterfacePrinter.PrintStaffMenu();
+				
 				ConsoleKeyInfo pressedKey = Console.ReadKey(true);
+				InterfacePrinter.ClearStaffMenuOutput();
 
 				switch (pressedKey.Key)
 				{
+					case ConsoleKey.D1:
+						PrintStaff();
+						break;
+					case ConsoleKey.D2:
+						{
+							String name = Console.ReadLine();
+							if (name == null)
+							{
+								Console.WriteLine("Name cant be null");
+								break;
+							}
+							var lastKey = staffMembers.Last().Key + 1;
+							staffMembers.Add(new StaffMember(lastKey, name ?? "impossible"));
+						}
+						break;
+					case ConsoleKey.D3:
+						{ 
+							var name = Console.ReadLine(); 
+							if (name == null)
+							{
+								Console.WriteLine("Name cant be null");
+								break;
+							}
+							if (staffMembers.Select(s => s.FullName).Contains(name) == false)
+							{
+								Console.WriteLine("There is no such staff with this name");
+								break;
+							}
+							var index = staffMembers.FindIndex(m => m.FullName == name);
+							staffMembers.RemoveAt(index);
+						}
+
+						break;
 					case ConsoleKey.D0:
 						exitFlag = true;
 						InterfacePrinter.ClearConsole();

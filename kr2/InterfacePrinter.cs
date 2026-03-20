@@ -72,6 +72,11 @@ namespace kr2
 				"0.Quit\n");
 		}
 
+		public static void ClearStaffMenuOutput()
+		{
+			Console.Write("\x1b[H\x1b[7B\x1b[0J");
+		}
+
 		public static KeyValuePair<int, int> ReadRoomFromConsole()
 		{
 			String str = Console.ReadLine();
