@@ -1,5 +1,6 @@
 ﻿using kr2.Roles;
 using System.Net;
+using System.Runtime.ExceptionServices;
 
 namespace kr2
 {
@@ -22,10 +23,106 @@ namespace kr2
         {
 			LoadTablesFromText();
 
-			PrintRooms();
-			PrintClients();
-			PrintStaff();
+			bool mainExitFlag = false;
+			
+
+			while (mainExitFlag == false)
+			{
+				InterfacePrinter.PrintMainMenu();
+				ConsoleKeyInfo pressedKey = Console.ReadKey(true);
+				InterfacePrinter.ClearConsole();
+
+				switch (pressedKey.Key)
+				{
+					case ConsoleKey.D1:
+						PrintMenuLoop();
+						break;
+					case ConsoleKey.D2:
+						QueriesMenuLoop();
+						break;
+					case ConsoleKey.D3:
+						EditStaffMenuLoop();
+						break;
+					case ConsoleKey.D0:
+						mainExitFlag = true;
+						Console.WriteLine("Exit");
+						break;
+				}
+			}
         }
+
+		static void PrintMenuLoop()
+		{
+			InterfacePrinter.PrintPrintMenu();
+			bool exitFlag = false;
+			while(!exitFlag)
+			{
+				
+				ConsoleKeyInfo pressedKey = Console.ReadKey(true);
+				InterfacePrinter.ClearPrintMenuOutput();
+
+				switch(pressedKey.Key)
+				{
+					case ConsoleKey.D1:
+						PrintRooms();
+						break;
+					case ConsoleKey.D2:
+						PrintClients();
+						break;
+					case ConsoleKey.D3:
+						PrintStaff();
+						break;
+					case ConsoleKey.D4:
+						PrintAssignedFloors();
+						break;
+					case ConsoleKey.D5:
+						PrintSchedule();
+						break;
+					case ConsoleKey.D0:
+						exitFlag = true;
+						InterfacePrinter.ClearConsole();
+						break;
+				}
+			}
+		}
+
+		static void QueriesMenuLoop()
+		{
+			
+			bool exitFlag = false;
+			while (!exitFlag)
+			{
+				InterfacePrinter.PrintQueriesMenu();
+				ConsoleKeyInfo pressedKey = Console.ReadKey(true);
+
+				switch (pressedKey.Key)
+				{
+					case ConsoleKey.D0:
+						exitFlag = true;
+						InterfacePrinter.ClearConsole();
+						break;
+				}
+			}
+		}
+
+		static void EditStaffMenuLoop()
+		{
+			
+			bool exitFlag = false;
+			while (!exitFlag)
+			{
+				InterfacePrinter.PrintStaffMenu();
+				ConsoleKeyInfo pressedKey = Console.ReadKey(true);
+
+				switch (pressedKey.Key)
+				{
+					case ConsoleKey.D0:
+						exitFlag = true;
+						InterfacePrinter.ClearConsole();
+						break;
+				}
+			}
+		}
 
 		static void LoadTablesFromText()
 		{
@@ -126,6 +223,7 @@ namespace kr2
 			}
 		} //LoadTablesFromFile
 
+
 		static void PrintRooms()
 		{
 			foreach (Room room in rooms) 
@@ -147,6 +245,22 @@ namespace kr2
 			foreach (StaffMember staffMember in staffMembers) 
 			{ 
 				Console.Write("-> " + staffMember.ToLineString()); 
+			}
+		}
+
+		static void PrintAssignedFloors()
+		{
+			foreach (KeyValuePair<int, int> pair in assignedFloors)
+			{
+				Console.WriteLine($"-> {pair.Key};{pair.Value}");
+			}
+		}
+
+		static void PrintSchedule()
+		{
+			foreach (KeyValuePair <int, Weekday> pair in schedule)
+			{
+				Console.WriteLine($"-> {pair.Key};{pair.Value.ToString()}");
 			}
 		}
     }
