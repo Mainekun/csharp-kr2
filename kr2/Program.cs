@@ -23,6 +23,8 @@ namespace kr2
 			LoadTablesFromText();
 
 			PrintRooms();
+			PrintClients();
+			PrintStaff();
         }
 
 		static void LoadTablesFromText()
@@ -58,10 +60,11 @@ namespace kr2
 								case 1:
 									if (int.TryParse(ms[0], out int clientKey) &&
 										int.TryParse(ms[4], out int paidNumber) &&
+										int.TryParse(ms[5], out int place) &&
 										DateOnly.TryParseExact(ms[6], "dd/MM/yyyy", out DateOnly arrivalDate) &&
 										int.TryParse(ms[7], out int paidDays))
 									{
-										clients.Add(new Client(clientKey, ms[1], ms[2], ms[3], paidNumber, ms[5], arrivalDate, paidDays));
+										clients.Add(new Client(clientKey, ms[1], ms[2], ms[3], paidNumber, place, arrivalDate, paidDays));
 									}
 									else
 									{
@@ -125,7 +128,26 @@ namespace kr2
 
 		static void PrintRooms()
 		{
-			foreach (Room room in rooms) { Console.WriteLine(room.ToString()); }
+			foreach (Room room in rooms) 
+			{ 
+				Console.Write("-> " + room.ToLineString()); 
+			}
+		}
+
+		static void PrintClients()
+		{
+			foreach (Client client in clients) 
+			{ 
+				Console.Write("-> " + client.ToLineString()); 
+			}
+		}
+
+		static void PrintStaff()
+		{
+			foreach (StaffMember staffMember in staffMembers) 
+			{ 
+				Console.Write("-> " + staffMember.ToLineString()); 
+			}
 		}
     }
 }

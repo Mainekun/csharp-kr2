@@ -34,6 +34,11 @@ namespace kr2
         {
             return $"Room {_number} on {_floor} floor, {_type.ToString()}, {_cost}$";
         }
+
+		public string ToLineString()
+		{
+			return $"{_number};{_floor};{((int)_type)};{_cost}\n";
+		}
 	}
 
 	internal enum RoomType

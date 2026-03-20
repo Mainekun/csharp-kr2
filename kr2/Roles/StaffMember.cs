@@ -30,6 +30,17 @@ namespace kr2.Roles
 			_key = key;
 			_fullName = fullName;
 		}
+
+        public override string ToString()
+        {
+			return $"Staff member\n" +
+				$"Name {_fullName}";
+        }
+
+		public string ToLineString()
+		{
+			return $"{_key};{_fullName}\n";
+		}
     }
 
 	public enum Weekday
