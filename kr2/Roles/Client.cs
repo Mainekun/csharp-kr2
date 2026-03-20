@@ -17,6 +17,10 @@ namespace kr2.Roles
 		private DateOnly _arrivialDate;
 		private int _paidDays;
 
+		public String Whence { get { return _whence; } }
+		public int RoomNumber { get { return _number; } }
+		public String Name { get { return _fullName; } }
+
 		public Client()
 		{
 			_key = -1;

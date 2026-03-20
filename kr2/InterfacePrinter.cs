@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,6 +56,11 @@ namespace kr2
 				"0.Quit\n");
 		}
 
+		public static void ClearQueriesMenuOutput()
+		{
+			Console.Write("\x1b[H\x1b[10B\x1b[0J");
+		}
+
 		public static void PrintStaffMenu()
 		{
 			Console.WriteLine(
@@ -64,6 +70,22 @@ namespace kr2
 				"3.Fire old one\n" +
 				"\n" +
 				"0.Quit\n");
+		}
+
+		public static KeyValuePair<int, int> ReadRoomFromConsole()
+		{
+			String str = Console.ReadLine();
+			if (str == null)
+			{
+				return new KeyValuePair<int, int>(-1, -1);
+			}
+			String[] room = str.Split(' ');
+			if (int.TryParse(room[0], out int roomNumber) &&
+				int.TryParse(room[1], out int floor))
+			{
+				return new KeyValuePair<int, int>(roomNumber, floor);
+			}
+			return new KeyValuePair<int, int>(-1, -1);
 		}
 	}
 }

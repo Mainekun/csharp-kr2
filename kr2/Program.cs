@@ -1,6 +1,8 @@
 ﻿using kr2.Roles;
+using System.Linq;
 using System.Net;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 
 namespace kr2
 {
@@ -88,15 +90,100 @@ namespace kr2
 
 		static void QueriesMenuLoop()
 		{
-			
-			bool exitFlag = false;
+            InterfacePrinter.PrintQueriesMenu();
+            bool exitFlag = false;
 			while (!exitFlag)
 			{
-				InterfacePrinter.PrintQueriesMenu();
 				ConsoleKeyInfo pressedKey = Console.ReadKey(true);
+				InterfacePrinter.ClearQueriesMenuOutput();
 
 				switch (pressedKey.Key)
 				{
+					case ConsoleKey.D1:
+						var room = InterfacePrinter.ReadRoomFromConsole();
+						var cost = rooms
+							.Where(r => r.Number == room.Key && r.Floor == room.Value)
+							.Select(r => r.Cost).First();
+						Console.WriteLine($"Cost of room {room.Key} on {room.Value} costs {cost}$");
+						break;
+					case ConsoleKey.D2:
+						string whence = Console.ReadLine();
+						List<Client> filteredClients = clients.Where(c => c.Whence == whence).ToList();
+						foreach (Client client in filteredClients)
+						{
+							Console.WriteLine(client.Name);
+						}
+						break;
+					case ConsoleKey.D3:
+						string clientsName = Console.ReadLine();
+						string strWeekday = Console.ReadLine();
+						Weekday weekday;
+						if (int.TryParse(strWeekday, out int day))
+						{
+							if (day >= 0 && day <= 6)
+							{
+								weekday = (Weekday)day;
+							}
+							else
+							{
+								Console.WriteLine("Weekday must be in range from 0 to 6, Monday to Sunday accordingly");
+								break;
+							}
+						}
+						else
+						{
+                            Console.WriteLine("Weekday must be integer");
+                            break;
+                        }
+						var clientsRoom = clients
+							.Where(c => c.Name == clientsName)
+							.Select(c => c.RoomNumber)
+							.ToList();
+						if (clientsRoom.Count < 1)
+						{
+							Console.WriteLine("There is no such person in hotel");
+							break;
+						}	
+						var targetFloor = rooms
+							.Where(r => r.Number == clientsRoom.First())
+							.Select(r => r.Floor)
+							.ToList();
+						if (targetFloor.Count < 1)
+						{
+							Console.WriteLine("There is no such room");
+							break;
+						}
+						var staffOnFloor = assignedFloors
+							.Where(p => p.Value == targetFloor.First())
+							.ToList();
+						var staffOnDay = schedule
+							.Where(p => p.Value == weekday)
+							.ToList();
+						var staffOnDayAndFloor = staffOnDay
+							.Join(
+								staffOnFloor,
+								d => d.Key,
+								f => f.Key,
+								(d, f) => new { Key = d.Key })
+							.Select(s => s.Key)
+							.ToList();
+						var targetStaff = staffMembers
+							.Where(s => staffOnDayAndFloor.Contains(s.Key))
+							.ToList();
+
+						Console.WriteLine($"Found {targetStaff.Count} staffmembers");
+						foreach (StaffMember staff in targetStaff)
+						{
+							Console.WriteLine(staff.FullName);
+						}
+
+						break;
+					case ConsoleKey.D4:
+						break;
+					case ConsoleKey.D5: 
+						break;
+					case ConsoleKey.D6:
+						break;
 					case ConsoleKey.D0:
 						exitFlag = true;
 						InterfacePrinter.ClearConsole();
@@ -197,7 +284,7 @@ namespace kr2
 									if (int.TryParse(ms[0], out int staffToWeekdayKey) &&
 										int.TryParse(ms[1], out int weekday))
 									{
-										assignedFloors.Add(new KeyValuePair<int, int>(staffToWeekdayKey, weekday));
+										schedule.Add(new KeyValuePair<int, Weekday>(staffToWeekdayKey, (Weekday)weekday));
 									}
 									else
 									{
@@ -217,6 +304,11 @@ namespace kr2
 				catch (FileNotFoundException ex)
 				{
 					Console.WriteLine(ex.Message);
+					Console.WriteLine("Create file? (Enter)");
+					if (Console.ReadKey(true).Key == ConsoleKey.Enter)
+					{
+						File.Create(path[i]);
+					}
 				}
 
 

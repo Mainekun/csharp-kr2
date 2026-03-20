@@ -14,6 +14,10 @@ namespace kr2
 		private RoomType _type;
 		private int _cost;
 
+		public int Number { get {  return _number; } }
+		public int Cost { get { return _cost; } }
+		public int Floor { get { return _floor; } }
+
 		public Room()
 		{
 			_number = -1;
