@@ -46,7 +46,8 @@ namespace kr2
 						EditStaffMenuLoop();
 						break;
 					case ConsoleKey.D0:
-						mainExitFlag = true;
+                    case ConsoleKey.Escape:
+                        mainExitFlag = true;
 						Console.WriteLine("Exit");
 						break;
 				}
@@ -81,7 +82,8 @@ namespace kr2
 						PrintSchedule();
 						break;
 					case ConsoleKey.D0:
-						exitFlag = true;
+                    case ConsoleKey.Escape:
+                        exitFlag = true;
 						InterfacePrinter.ClearConsole();
 						break;
 				}
@@ -200,8 +202,8 @@ namespace kr2
 									P = c?.Place,
 									Number = r.Number,
 									RType = r.Type})
-							.GroupBy(s => s.Number)
-							.Select(g => new { Number = g.Key, Occupied = g.Count(p => p.P != null)});
+							.GroupBy(s => new { s.Number, s.RType })
+							.Select(g => new { Number = g.Key.Number, Occupied = (int)g.Key.RType + 1 - g.Count(p => p.P != null)});
 
 							foreach (var r in availableRooms)
 							{
@@ -220,7 +222,7 @@ namespace kr2
 									c => c.RoomNumber,
 									(r, c) => new { Number = r.Number });
 
-							Console.WriteLine($"occupied {occupiedSingleRooms.Count()} rooms");
+							Console.WriteLine($"occupied {occupiedSingleRooms.Count()} singlerooms");
 							foreach (var r in occupiedSingleRooms)
 							{
 								Console.WriteLine($"Room {r.Number} is occupied");
@@ -244,6 +246,7 @@ namespace kr2
 
 						break;
 					case ConsoleKey.D0:
+					case ConsoleKey.Escape:
 						exitFlag = true;
 						InterfacePrinter.ClearConsole();
 						break;
@@ -298,7 +301,8 @@ namespace kr2
 
 						break;
 					case ConsoleKey.D0:
-						exitFlag = true;
+                    case ConsoleKey.Escape:
+                        exitFlag = true;
 						InterfacePrinter.ClearConsole();
 						break;
 				}
@@ -449,5 +453,26 @@ namespace kr2
 				Console.WriteLine($"-> {pair.Key};{pair.Value.ToString()}");
 			}
 		}
+    }
+}
+
+public static class LinqExtensions
+{
+    public static IEnumerable<TResult> LeftJoin<TLeft, TRight, TKey, TResult>(
+        this IEnumerable<TLeft> left,
+        IEnumerable<TRight> right,
+        Func<TLeft, TKey> leftKeySelector,
+        Func<TRight, TKey> rightKeySelector,
+        Func<TLeft, TRight?, TResult> resultSelector)
+    {
+        return left
+            .GroupJoin(
+                right,
+                leftKeySelector,
+                rightKeySelector,
+                (l, r) => new { l, r })
+            .SelectMany(
+                x => x.r.DefaultIfEmpty(),
+                (x, r) => resultSelector(x.l, r));
     }
 }
